@@ -10,6 +10,203 @@ using DataModels;
 
 namespace AdSpecter
 {
+    [System.Serializable]
+    public class DeveloperApp
+    {
+        public int id;
+        public string name;
+        public string developer_key;
+        public User user;
+
+        public DeveloperApp(string developerKey)
+        {
+            developer_key = developerKey;
+        }
+
+        public static DeveloperApp CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<DeveloperApp>(jsonString);
+        }
+
+        public string SaveToString()
+        {
+            return JsonUtility.ToJson(this);
+        }
+
+    }
+
+    [Serializable]
+    public class User
+    {
+        public int id;
+        public string first_name;
+        public string last_name;
+        public string full_name;
+        public string account_type;
+        public string username;
+        public string email;
+        public string authentication_token;
+
+        public static User CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<User>(jsonString);
+        }
+    }
+
+    [Serializable]
+    public class AdUnit
+    {
+        public int id;
+        public string title;
+        public string description;
+        public string click_url;
+        public string ad_unit_url;
+        public bool active;
+        public User user;
+
+        public static AdUnit CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<AdUnit>(jsonString);
+        }
+    }
+
+    [Serializable]
+    public class AdUnitWrapper
+    {
+        public AdUnit ad_unit;
+
+        public static AdUnitWrapper CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<AdUnitWrapper>(jsonString);
+        }
+    }
+
+    [System.Serializable]
+    public class Impression
+    {
+        public int id;
+        public int ad_unit_id;
+        public int developer_key;
+        public int app_session_id;
+        public bool served;
+        public bool clicked;
+        public bool shown;
+
+        public Impression(int adUnitId, int developerKey, int appSessionId)
+        {
+            id = 0;
+            served = true;
+            clicked = false;
+            shown = false;
+            ad_unit_id = adUnitId;
+            developer_key = developerKey;
+            app_session_id = appSessionId;
+        }
+
+        public static Impression CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<Impression>(jsonString);
+        }
+    }
+
+    [System.Serializable]
+    public class ImpressionWrapper
+    {
+        public Impression impression;
+
+        public static ImpressionWrapper CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<ImpressionWrapper>(jsonString);
+        }
+
+        public string SaveToString()
+        {
+            return JsonUtility.ToJson(this);
+        }
+    }
+
+
+
+
+    [System.Serializable]
+    public class AppSession
+    {
+        public int id;
+        public int developer_key;
+
+        public static AppSession CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<AppSession>(jsonString);
+        }
+    }
+
+    [System.Serializable]
+    public class AppSessionWrapper
+    {
+        public AppSession app_session;
+
+        public static AppSessionWrapper CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<AppSessionWrapper>(jsonString);
+        }
+    }
+
+    [System.Serializable]
+    public class Device
+    {
+        public string device_model;
+
+
+        public Device()
+        {
+            device_model = SystemInfo.deviceModel;
+
+        }
+
+        public static Device CreateFromJSON(string jsonString)
+        {
+            return JsonUtility.FromJson<Device>(jsonString);
+        }
+
+        public string SaveToString()
+        {
+            return JsonUtility.ToJson(this);
+        }
+
+    }
+
+    [System.Serializable]
+    public class AppSetup
+    {
+        public string developer_key;
+        public Device device;
+
+        public AppSetup(string developerKey)
+        {
+            developer_key = developerKey;
+        }
+
+        public string SaveToString()
+        {
+            return JsonUtility.ToJson(this);
+        }
+    }
+
+    [System.Serializable]
+    public class AppSetupWrapper
+    {
+        public AppSetup developer_app;
+        //
+        //	public AppSetupWrapper(string clientAPIKey){
+        //		developer_app = new AppSetup (clientAPIKey);
+        //	}
+
+        public string SaveToString()
+        {
+            return JsonUtility.ToJson(this);
+        }
+    }
+
 
     public class AdLoaderPlugIn : MonoBehaviour
     {
