@@ -6,21 +6,21 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Events;
-using DataModels;
+
 
 namespace AdSpecter
 {
-    [System.Serializable]
+    [Serializable]
     public class DeveloperApp
     {
         public int id;
         public string name;
-        public string developer_key;
+        public int developer_app_id;
         public User user;
 
-        public DeveloperApp(string developerKey)
+        public DeveloperApp(int developerAppId)
         {
-            developer_key = developerKey;
+            developer_app_id = developerAppId;
         }
 
         public static DeveloperApp CreateFromJSON(string jsonString)
@@ -32,7 +32,6 @@ namespace AdSpecter
         {
             return JsonUtility.ToJson(this);
         }
-
     }
 
     [Serializable]
@@ -81,25 +80,25 @@ namespace AdSpecter
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Impression
     {
         public int id;
         public int ad_unit_id;
-        public int developer_key;
+        public int developer_app_id;
         public int app_session_id;
         public bool served;
         public bool clicked;
         public bool shown;
 
-        public Impression(int adUnitId, int developerKey, int appSessionId)
+        public Impression(int adUnitId, int developerAppId, int appSessionId)
         {
             id = 0;
             served = true;
             clicked = false;
             shown = false;
             ad_unit_id = adUnitId;
-            developer_key = developerKey;
+            developer_app_id = developerAppId;
             app_session_id = appSessionId;
         }
 
@@ -109,7 +108,7 @@ namespace AdSpecter
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class ImpressionWrapper
     {
         public Impression impression;
@@ -128,11 +127,11 @@ namespace AdSpecter
 
 
 
-    [System.Serializable]
+    [Serializable]
     public class AppSession
     {
         public int id;
-        public int developer_key;
+        public int developer_app_id;
 
         public static AppSession CreateFromJSON(string jsonString)
         {
@@ -140,7 +139,7 @@ namespace AdSpecter
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class AppSessionWrapper
     {
         public AppSession app_session;
@@ -151,11 +150,10 @@ namespace AdSpecter
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class Device
     {
         public string device_model;
-
 
         public Device()
         {
@@ -172,10 +170,9 @@ namespace AdSpecter
         {
             return JsonUtility.ToJson(this);
         }
-
     }
 
-    [System.Serializable]
+    [Serializable]
     public class AppSetup
     {
         public string developer_key;
@@ -192,15 +189,11 @@ namespace AdSpecter
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class AppSetupWrapper
     {
         public AppSetup developer_app;
-        //
-        //	public AppSetupWrapper(string clientAPIKey){
-        //		developer_app = new AppSetup (clientAPIKey);
-        //	}
-
+   
         public string SaveToString()
         {
             return JsonUtility.ToJson(this);
@@ -221,8 +214,9 @@ namespace AdSpecter
             startUpdate = false;
         }
 
-        public IEnumerator GetAdUnit(GameObject Plane)
+        public IEnumerator GetAdUnit(GameObject Plane, string format)
         {
+            //format must be "image" or "video"
             ASRUAdPlane = Plane;
             //JSON in here
             UnityWebRequest uwr = UnityWebRequest.Get("https://adspecter-sandbox.herokuapp.com/ad_units/default");
@@ -238,23 +232,26 @@ namespace AdSpecter
                 Debug.Log("Received ad unit");
 
                 adUnitWrapper = AdUnitWrapper.CreateFromJSON(uwr.downloadHandler.text);
-                //Debug.Log("Created From JSON");
-                //StartCoroutine(GetTexture(adUnitWrapper.ad_unit.ad_unit_url));
-                StartCoroutine(GetTexture("https://s3-us-west-1.amazonaws.com/adspecter-demo-video/Castle_Demo+(1).mov"));
-                //Debug.Log("Got the texture");
+              
+                if(format == "image")
+                {
+                    StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
+                } else
+                {//video
+                 //StartCoroutine(GetMovieTexture("https://s3-us-west-1.amazonaws.com/adspecter-demo-video/Castle_Demo+(1).mov"));
+                    StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
+                }
+                //this should be a switch statement instead
 
             }
         }
 
         //called by getAdUnit
-        /* IEnumerator GetTexture(string url)
+        IEnumerator GetImageTexture(string url)
          {
-             //movie texture
              UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
 
-             //Debug.Log("got web request");
              yield return www.SendWebRequest();
-             //Debug.Log("send web request");
 
              if (www.isNetworkError || www.isHttpError)
              {
@@ -262,16 +259,15 @@ namespace AdSpecter
              }
              else
              {
-                 //Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
+                 Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
                  Debug.Log("Received ad texture");
 
                  ASRUAdPlane.GetComponent<Renderer>().material.mainTexture = myTexture;
-                 //(ASRUAdPlane.GetComponent<Renderer>().material.mainTexture).Play();
-
+              
                  ASRUAdPlane.SetActive(true);
 
                  var impression = new Impression(adUnitWrapper.ad_unit.id,
-                     AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_key,
+                     AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
                      AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
                  );
 
@@ -280,58 +276,57 @@ namespace AdSpecter
 
                  var json = impressionWrapper.SaveToString();
 
-                 Debug.Log("line before post impression");
                  StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
 
                  Debug.Log("Ad was seen");
                  startUpdate = true;
              }
-         } */
+         } 
 
-        IEnumerator GetTexture(string url)
+        IEnumerator GetMovieTexture(string url)
         {
-            //movie texture
-            WWW www = new WWW(url);
-
-            //Debug.Log("got web request");
-            //yield return www.SendWebRequest();
-            yield return www;
-            //Debug.Log("send web request");
-
-            if (!string.IsNullOrEmpty(www.error))
+            UnityWebRequest www = UnityWebRequestMultimedia.GetMovieTexture(url);
+            
+            yield return www.SendWebRequest();
+           
+            if (www.isNetworkError || www.isHttpError)
             {
                 Debug.Log("Error while getting ad texture:" + www.error);
             }
             else
             {
-                MovieTexture myTexture = www.GetMovieTexture();
+                MovieTexture myTexture = (DownloadHandlerMovieTexture.GetContent(www));
                 Debug.Log("Received ad texture");
 
                 ASRUAdPlane.GetComponent<Renderer>().material.mainTexture = myTexture;
                 MovieTexture movie = ASRUAdPlane.GetComponent<Renderer>().material.mainTexture as MovieTexture;
+                AudioSource audio = ASRUAdPlane.GetComponent<AudioSource>();
+                audio.clip = movie.audioClip;
+                Debug.Log(movie.audioClip);
+                
                 movie.Play();
-
-                ASRUAdPlane.SetActive(true);
-
-                var impression = new Impression(adUnitWrapper.ad_unit.id,
-                    AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_key,
-                    AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
-                );
-
-                impressionWrapper = new ImpressionWrapper();
-                impressionWrapper.impression = impression;
-
-                var json = impressionWrapper.SaveToString();
-
-                Debug.Log("line before post impression");
-                StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
-
-                Debug.Log("Ad was seen");
-                startUpdate = true;
+                audio.Play();
             }
+      
+            //ASRUAdPlane.SetActive(true);
+
+            var impression = new Impression(adUnitWrapper.ad_unit.id,
+                AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
+                AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
+            );
+
+            impressionWrapper = new ImpressionWrapper();
+            impressionWrapper.impression = impression;
+
+            var json = impressionWrapper.SaveToString();
+
+            Debug.Log("line before post impression");
+            StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
+
+            Debug.Log("Ad was seen");
+            startUpdate = true;
         }
-
-
+        
         IEnumerator PostImpression(string json, string url)
         {
             var uwr = new UnityWebRequest(url, "PUT");
@@ -363,7 +358,6 @@ namespace AdSpecter
         {
             if (Input.GetMouseButtonDown(0))
             {
-                Debug.Log("clicked!");
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
 
@@ -389,9 +383,6 @@ namespace AdSpecter
 
     public class AdSpecterConfigPlugIn : MonoBehaviour
     {
-        //private GameObject ASRUAdUnit;
-        //public string developerKey;
-
         public static string appSessionId;
         public static AppSessionWrapper appSessionWrapper;
 
@@ -407,7 +398,6 @@ namespace AdSpecter
             var url = "https://adspecter-sandbox.herokuapp.com/developer_app/authenticate";
 
             StartCoroutine(ASRUSetDeveloperKey(postData, url));
-            //ASRUSetDeveloperKey(postData, url);
             Debug.Log("done authentication");
         }
 
@@ -420,18 +410,9 @@ namespace AdSpecter
             UnityWebRequest uwr = UnityWebRequest.Put(url, bodyRaw);
             uwr.method = "POST";
             uwr.SetRequestHeader("Content-Type", "application/json");
-
-            if (uwr.isNetworkError || uwr.isHttpError)
-            {
-                Debug.Log("Error while set request header " + uwr.error);
-            }
-            else
-            {
-                Debug.Log("sendwebrequest problem");
-            }
+       
             yield return uwr.SendWebRequest();
-            //Debug.Log(uwr);
-
+            
             if (uwr.isNetworkError || uwr.isHttpError)
             {
                 Debug.Log("Error while setting developer key: " + uwr.error);
@@ -442,12 +423,8 @@ namespace AdSpecter
 
                 appSessionWrapper = AppSessionWrapper.CreateFromJSON(uwr.downloadHandler.text);
 
-                //GameObject.Find("ASRUScripts").GetComponent<AdLoaderPlugIn>().enabled = true;
                 loadAds = true;
-
             }
         }
     }
-
-
 }
