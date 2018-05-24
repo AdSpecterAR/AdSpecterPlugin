@@ -53,7 +53,7 @@ namespace AdSpecter
     }
 
     [Serializable]
-    public class AdUnit
+    public class AdUnitData
     {
         public int id;
         public string title;
@@ -63,20 +63,20 @@ namespace AdSpecter
         public bool active;
         public User user;
 
-        public static AdUnit CreateFromJSON(string jsonString)
+        public static AdUnitData CreateFromJSON(string jsonString)
         {
-            return JsonUtility.FromJson<AdUnit>(jsonString);
+            return JsonUtility.FromJson<AdUnitData>(jsonString);
         }
     }
 
     [Serializable]
-    public class AdUnitWrapper
+    public class AdUnitDataWrapper
     {
-        public AdUnit ad_unit;
+        public AdUnitData ad_unit_data;
 
-        public static AdUnitWrapper CreateFromJSON(string jsonString)
+        public static AdUnitDataWrapper CreateFromJSON(string jsonString)
         {
-            return JsonUtility.FromJson<AdUnitWrapper>(jsonString);
+            return JsonUtility.FromJson<AdUnitDataWrapper>(jsonString);
         }
     }
 
@@ -203,9 +203,9 @@ namespace AdSpecter
 
     public class AdLoaderPlugIn : MonoBehaviour
     {
-        private GameObject ASRUAdPlane;
+        private GameObject ASRUAdUnit;
 
-        private AdUnitWrapper adUnitWrapper;
+        private AdUnitDataWrapper adUnitDataWrapper;
         private ImpressionWrapper impressionWrapper;
         public bool startUpdate;
 
@@ -214,10 +214,10 @@ namespace AdSpecter
             startUpdate = false;
         }
 
-        public IEnumerator GetAdUnit(GameObject Plane, string format)
+        public IEnumerator GetAdUnit(GameObject Unit, string format)
         {
             //format must be "image" or "video"
-            ASRUAdPlane = Plane;
+            ASRUAdUnit = Unit;
             //JSON in here
             UnityWebRequest uwr = UnityWebRequest.Get("https://adspecter-sandbox.herokuapp.com/ad_units/default");
 
@@ -231,18 +231,22 @@ namespace AdSpecter
             {
                 Debug.Log("Received ad unit");
 
-                adUnitWrapper = AdUnitWrapper.CreateFromJSON(uwr.downloadHandler.text);
+                adUnitDataWrapper = AdUnitDataWrapper.CreateFromJSON(uwr.downloadHandler.text);
               
-                if(format == "image")
+                switch(format)
                 {
-                    StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
-                } else
-                {//video
-                 //StartCoroutine(GetMovieTexture("https://s3-us-west-1.amazonaws.com/adspecter-demo-video/Castle_Demo+(1).mov"));
-                    StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
-                }
-                //this should be a switch statement instead
+                    case "image":
+                        {
+                            StartCoroutine(GetImageTexture(adUnitDataWrapper.ad_unit_data.ad_unit_url));
+                            break;
+                        }
 
+                    case "video":
+                        {
+                            StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
+                            break;
+                        }
+                }
             }
         }
 
@@ -262,11 +266,11 @@ namespace AdSpecter
                  Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
                  Debug.Log("Received ad texture");
 
-                 ASRUAdPlane.GetComponent<Renderer>().material.mainTexture = myTexture;
+                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
               
-                 ASRUAdPlane.SetActive(true);
+                 ASRUAdUnit.SetActive(true);
 
-                 var impression = new Impression(adUnitWrapper.ad_unit.id,
+                 var impression = new Impression(adUnitDataWrapper.ad_unit_data.id,
                      AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
                      AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
                  );
@@ -298,19 +302,19 @@ namespace AdSpecter
                 MovieTexture myTexture = (DownloadHandlerMovieTexture.GetContent(www));
                 Debug.Log("Received ad texture");
 
-                ASRUAdPlane.GetComponent<Renderer>().material.mainTexture = myTexture;
-                MovieTexture movie = ASRUAdPlane.GetComponent<Renderer>().material.mainTexture as MovieTexture;
-                AudioSource audio = ASRUAdPlane.GetComponent<AudioSource>();
+                ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
+                MovieTexture movie = ASRUAdUnit.GetComponent<Renderer>().material.mainTexture as MovieTexture;
+               /* AudioSource audio = ASRUAdUnit.GetComponent<AudioSource>();
                 audio.clip = movie.audioClip;
                 Debug.Log(movie.audioClip);
-                
+                audio.Play();*/
                 movie.Play();
-                audio.Play();
+                
             }
       
-            //ASRUAdPlane.SetActive(true);
+            //ASRUAdUnit.SetActive(true);
 
-            var impression = new Impression(adUnitWrapper.ad_unit.id,
+            var impression = new Impression(adUnitDataWrapper.ad_unit_data.id,
                 AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
                 AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
             );
@@ -365,11 +369,11 @@ namespace AdSpecter
                 {
                     Debug.Log("hit.transform.name" + hit.transform.name);
 
-                    if (hit.transform.name == "ASRUAdPlane")
+                    if (hit.transform.name == "ASRUAdUnit")
                     {
                         Debug.Log("Clicked");
 
-                        Application.OpenURL(adUnitWrapper.ad_unit.click_url);
+                        Application.OpenURL(adUnitDataWrapper.ad_unit_data.click_url);
                         var json = impressionWrapper.SaveToString();
                         var impressionId = impressionWrapper.impression.id;
 
