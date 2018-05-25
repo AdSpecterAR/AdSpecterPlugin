@@ -62,6 +62,11 @@ namespace AdSpecter
         public string ad_unit_url;
         public bool active;
         public User user;
+        public int aspect_ratio_width;
+        public int aspect_ratio_height;
+        public string ad_format;
+        public bool rewarded;
+        public bool interstitial;
 
         public static AdUnit CreateFromJSON(string jsonString)
         {
@@ -90,6 +95,7 @@ namespace AdSpecter
         public bool served;
         public bool clicked;
         public bool shown;
+        public int interaction_length;
 
         public Impression(int adUnitId, int developerAppId, int appSessionId)
         {
@@ -203,7 +209,7 @@ namespace AdSpecter
 
     public class AdLoaderPlugIn : MonoBehaviour
     {
-        private GameObject ASRUAdPlane;
+        private GameObject ASRUAdUnit;
 
         private AdUnitWrapper adUnitWrapper;
         private ImpressionWrapper impressionWrapper;
@@ -214,13 +220,16 @@ namespace AdSpecter
             startUpdate = false;
         }
 
-        public IEnumerator GetAdUnit(GameObject Plane, string format)
+        public IEnumerator GetAdUnit(GameObject Unit, string format)
         {
             //format must be "image" or "video"
-            ASRUAdPlane = Plane;
+            ASRUAdUnit = Unit;
             //JSON in here
-            UnityWebRequest uwr = UnityWebRequest.Get("https://adspecter-sandbox.herokuapp.com/ad_units/default");
+            var url ="https://adspecter-sandbox.herokuapp.com/ad_units/default";
+            //var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad-units/fetch";
+            //var url = baseUrl + "?ad_format=" + format + "?aspect_ratio_width=16"+ "?aspect_ratio_height=9";
 
+            UnityWebRequest uwr = UnityWebRequest.Get(url);
             yield return uwr.SendWebRequest();
 
             if (uwr.isNetworkError || uwr.isHttpError)
@@ -233,16 +242,20 @@ namespace AdSpecter
 
                 adUnitWrapper = AdUnitWrapper.CreateFromJSON(uwr.downloadHandler.text);
               
-                if(format == "image")
+                switch(format)
                 {
-                    StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
-                } else
-                {//video
-                 //StartCoroutine(GetMovieTexture("https://s3-us-west-1.amazonaws.com/adspecter-demo-video/Castle_Demo+(1).mov"));
-                    StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
-                }
-                //this should be a switch statement instead
+                    case "image":
+                        {
+                            StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
+                            break;
+                        }
 
+                    case "video":
+                        {
+                            StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
+                            break;
+                        }
+                }
             }
         }
 
@@ -262,9 +275,9 @@ namespace AdSpecter
                  Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
                  Debug.Log("Received ad texture");
 
-                 ASRUAdPlane.GetComponent<Renderer>().material.mainTexture = myTexture;
+                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
               
-                 ASRUAdPlane.SetActive(true);
+                 ASRUAdUnit.SetActive(true);
 
                  var impression = new Impression(adUnitWrapper.ad_unit.id,
                      AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
@@ -276,9 +289,9 @@ namespace AdSpecter
 
                  var json = impressionWrapper.SaveToString();
 
+                 Debug.Log("Ad was seen");
                  StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
 
-                 Debug.Log("Ad was seen");
                  startUpdate = true;
              }
          } 
@@ -298,17 +311,12 @@ namespace AdSpecter
                 MovieTexture myTexture = (DownloadHandlerMovieTexture.GetContent(www));
                 Debug.Log("Received ad texture");
 
-                ASRUAdPlane.GetComponent<Renderer>().material.mainTexture = myTexture;
-                MovieTexture movie = ASRUAdPlane.GetComponent<Renderer>().material.mainTexture as MovieTexture;
-                AudioSource audio = ASRUAdPlane.GetComponent<AudioSource>();
-                audio.clip = movie.audioClip;
-                Debug.Log(movie.audioClip);
+                ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
+               
                 
-                movie.Play();
-                audio.Play();
             }
       
-            //ASRUAdPlane.SetActive(true);
+            //ASRUAdUnit.SetActive(true);
 
             var impression = new Impression(adUnitWrapper.ad_unit.id,
                 AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
@@ -320,13 +328,37 @@ namespace AdSpecter
 
             var json = impressionWrapper.SaveToString();
 
-            Debug.Log("line before post impression");
+            Debug.Log("Ad was seen");
             StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
 
-            Debug.Log("Ad was seen");
             startUpdate = true;
         }
-        
+
+        //only call if ad format is video, returns length of movie
+        public float PlayVideo()
+        {
+            MovieTexture movie = ASRUAdUnit.GetComponent<Renderer>().material.mainTexture as MovieTexture;
+            /* AudioSource audio = ASRUAdUnit.GetComponent<AudioSource>();
+             audio.clip = movie.audioClip;
+             Debug.Log(movie.audioClip);
+             audio.Play();*/
+            if (!movie.isPlaying && movie.isReadyToPlay)
+            {
+                movie.Play();
+            }
+
+            return movie.duration;
+        }
+
+        public void PauseVideo()
+        {
+            MovieTexture movie = ASRUAdUnit.GetComponent<Renderer>().material.mainTexture as MovieTexture;
+            if (movie.isPlaying)
+            {
+                movie.Pause();
+            }
+        }
+
         IEnumerator PostImpression(string json, string url)
         {
             var uwr = new UnityWebRequest(url, "PUT");
@@ -365,7 +397,7 @@ namespace AdSpecter
                 {
                     Debug.Log("hit.transform.name" + hit.transform.name);
 
-                    if (hit.transform.name == "ASRUAdPlane")
+                    if (hit.transform.name == "ASRUAdUnit")
                     {
                         Debug.Log("Clicked");
 
