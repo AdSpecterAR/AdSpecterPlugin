@@ -220,14 +220,28 @@ namespace AdSpecter
             startUpdate = false;
         }
 
-        public IEnumerator GetAdUnit(GameObject Unit, string format)
+        public IEnumerator GetAdUnit(GameObject adUnit, string format, int width, int height)
         {
             //format must be "image" or "video"
-            ASRUAdUnit = Unit;
-            //JSON in here
-            var url ="https://adspecter-sandbox.herokuapp.com/ad_units/default";
-            //var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad-units/fetch";
-            //var url = baseUrl + "?ad_format=" + format + "?aspect_ratio_width=16"+ "?aspect_ratio_height=9";
+
+            ASRUAdUnit = adUnit;
+
+            var aspect_ratio_height = height;
+            var aspect_ratio_width = width;
+
+            if (width == height)
+            {
+                aspect_ratio_height = 1;
+                aspect_ratio_width = 1;
+            }
+            
+//            var url ="https://adspecter-sandbox.herokuapp.com/ad_units/default";
+            var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
+//            var baseUrl = "http://localhost:3000/ad_units/fetch";
+            var url = baseUrl + 
+                      "?ad_format=" + format + 
+                      "&aspect_ratio_width=" + aspect_ratio_width + 
+                      "&aspect_ratio_height=" + aspect_ratio_height;
 
             UnityWebRequest uwr = UnityWebRequest.Get(url);
             yield return uwr.SendWebRequest();
@@ -241,20 +255,28 @@ namespace AdSpecter
                 Debug.Log("Received ad unit");
 
                 adUnitWrapper = AdUnitWrapper.CreateFromJSON(uwr.downloadHandler.text);
+//                Debug.Log("****************");
+//                Debug.Log("Ad Unit Data: " + adUnitWrapper.ad_unit);
+//                Debug.Log("Ad Unit Data: " + adUnitWrapper.ad_unit.ad_unit_url);
+//                Debug.Log("Ad Unit Data: " + adUnitWrapper.ad_unit.ad_format);
+//                Debug.Log("Ad Unit Data: " + adUnitWrapper.ad_unit.aspect_ratio_height);
+//                Debug.Log("Ad Unit Data: " + adUnitWrapper.ad_unit.aspect_ratio_width);
               
                 switch(format)
                 {
                     case "image":
-                        {
-                            StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
-                            break;
-                        }
+                    {
+                        StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
+                        break;
+                    }
 
                     case "video":
-                        {
-                            StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
-                            break;
-                        }
+                    {
+//                        Debug.Log("********* HERE **********");
+//                        StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
+                        StartCoroutine(GetMovieTexture(adUnitWrapper.ad_unit.ad_unit_url));
+                        break;
+                    }
                 }
             }
         }
@@ -290,6 +312,7 @@ namespace AdSpecter
                  var json = impressionWrapper.SaveToString();
 
                  Debug.Log("Ad was seen");
+//                 StartCoroutine(PostImpression(json, "http://localhost:3000/impressions"));
                  StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
 
                  startUpdate = true;
@@ -329,6 +352,7 @@ namespace AdSpecter
             var json = impressionWrapper.SaveToString();
 
             Debug.Log("Ad was seen");
+//            StartCoroutine(PostImpression(json, "http://localhost:3000/impressions"));
             StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
 
             startUpdate = true;
@@ -406,6 +430,7 @@ namespace AdSpecter
                         var impressionId = impressionWrapper.impression.id;
 
                         StartCoroutine(PostImpression("", string.Format("https://adspecter-sandbox.herokuapp.com/impressions/{0}/clicked", impressionId)));
+//                        StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/clicked", impressionId)));
                     }
                 }
             }
@@ -428,6 +453,7 @@ namespace AdSpecter
             Debug.Log("postData: " + postData);
 
             var url = "https://adspecter-sandbox.herokuapp.com/developer_app/authenticate";
+//            var url = "http://localhost:3000/developer_app/authenticate";
 
             StartCoroutine(ASRUSetDeveloperKey(postData, url));
             Debug.Log("done authentication");
