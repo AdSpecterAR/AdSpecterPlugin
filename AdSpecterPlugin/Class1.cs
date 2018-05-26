@@ -234,14 +234,14 @@ namespace AdSpecter
                 aspect_ratio_height = 1;
                 aspect_ratio_width = 1;
             }
-            
-//            var url ="https://adspecter-sandbox.herokuapp.com/ad_units/default";
-            var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
-//            var baseUrl = "http://localhost:3000/ad_units/fetch";
-            var url = baseUrl + 
-                      "?ad_format=" + format + 
-                      "&aspect_ratio_width=" + aspect_ratio_width + 
-                      "&aspect_ratio_height=" + aspect_ratio_height;
+
+            //var url ="https://adspecter-sandbox.herokuapp.com/ad_units/default";
+             var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
+            //         //   var baseUrl = "http://localhost:3000/ad_units/fetch";
+             var url = baseUrl + 
+                        "?ad_format=" + format + 
+                        "&aspect_ratio_width=" + aspect_ratio_width + 
+                        "&aspect_ratio_height=" + aspect_ratio_height;
 
             UnityWebRequest uwr = UnityWebRequest.Get(url);
             yield return uwr.SendWebRequest();
@@ -273,7 +273,7 @@ namespace AdSpecter
                     case "video":
                     {
 //                        Debug.Log("********* HERE **********");
-//                        StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
+                      //  StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
                         StartCoroutine(GetMovieTexture(adUnitWrapper.ad_unit.ad_unit_url));
                         break;
                     }
@@ -298,13 +298,21 @@ namespace AdSpecter
                  Debug.Log("Received ad texture");
 
                  ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
-              
-                 ASRUAdUnit.SetActive(true);
+                Debug.Log("material: " + ASRUAdUnit.GetComponent<Renderer>().material);
+                Debug.Log("texture: " + ASRUAdUnit.GetComponent<Renderer>().material.mainTexture);
+                ASRUAdUnit.SetActive(true);
+                Debug.Log("ad unit set active");
 
-                 var impression = new Impression(adUnitWrapper.ad_unit.id,
+
+                Debug.Log("adUnitid: " + adUnitWrapper.ad_unit.id);
+                Debug.Log("developer adpp id: " + AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id);
+                Debug.Log(AdSpecterConfigPlugIn.appSessionWrapper.app_session.id);
+
+                var impression = new Impression(adUnitWrapper.ad_unit.id,
                      AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
                      AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
                  );
+                Debug.Log("impression: " + impression);
 
                  impressionWrapper = new ImpressionWrapper();
                  impressionWrapper.impression = impression;
@@ -315,8 +323,8 @@ namespace AdSpecter
 //                 StartCoroutine(PostImpression(json, "http://localhost:3000/impressions"));
                  StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
 
-                 startUpdate = true;
-             }
+                startUpdate = true;
+            }
          } 
 
         IEnumerator GetMovieTexture(string url)
@@ -335,16 +343,25 @@ namespace AdSpecter
                 Debug.Log("Received ad texture");
 
                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
-               
-                
+
+                Debug.Log("material: " + ASRUAdUnit.GetComponent<Renderer>().material);
+                Debug.Log("texture: " + ASRUAdUnit.GetComponent<Renderer>().material.mainTexture);
+
             }
-      
-            //ASRUAdUnit.SetActive(true);
+            
+            ASRUAdUnit.SetActive(true);
+            //this playvidio() should only be here until the impression is fixed
+            //ayVideo();
+
+            startUpdate = true;
 
             var impression = new Impression(adUnitWrapper.ad_unit.id,
                 AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
                 AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
             );
+
+            Debug.Log("impression: " + impression);
+
 
             impressionWrapper = new ImpressionWrapper();
             impressionWrapper.impression = impression;
@@ -354,8 +371,7 @@ namespace AdSpecter
             Debug.Log("Ad was seen");
 //            StartCoroutine(PostImpression(json, "http://localhost:3000/impressions"));
             StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
-
-            startUpdate = true;
+ 
         }
 
         //only call if ad format is video, returns length of movie
@@ -366,7 +382,8 @@ namespace AdSpecter
              audio.clip = movie.audioClip;
              Debug.Log(movie.audioClip);
              audio.Play();*/
-            if (!movie.isPlaying && movie.isReadyToPlay)
+           // if (!movie.isPlaying && movie.isReadyToPlay)
+            if(!movie.isPlaying)
             {
                 movie.Play();
             }
