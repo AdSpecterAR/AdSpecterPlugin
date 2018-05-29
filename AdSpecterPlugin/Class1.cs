@@ -58,7 +58,9 @@ namespace AdSpecter
         public int id;
         public string title;
         public string description;
-        public string click_url;
+        public string click_url_default;
+        public string click_url_ios;
+        public string click_url_android;
         public string ad_unit_url;
         public bool active;
         public User user;
@@ -67,6 +69,7 @@ namespace AdSpecter
         public string ad_format;
         public bool rewarded;
         public bool interstitial;
+        public string call_to_action;
 
         public static AdUnit CreateFromJSON(string jsonString)
         {
@@ -253,7 +256,7 @@ namespace AdSpecter
             else
             {
                 Debug.Log("Received ad unit");
-
+                Debug.Log(uwr.downloadHandler.text);
                 adUnitWrapper = AdUnitWrapper.CreateFromJSON(uwr.downloadHandler.text);
 //                Debug.Log("****************");
 //                Debug.Log("Ad Unit Data: " + adUnitWrapper.ad_unit);
@@ -427,6 +430,35 @@ namespace AdSpecter
             }
         }
 
+
+       /* public void ClickThrough()
+        {
+            Debug.Log("Clicked");
+
+            string click_url;
+
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                click_url = adUnitWrapper.ad_unit.click_url_android;
+            }
+            else if (Application.platform == RuntimePlatform.IPhonePlayer)
+            {
+                click_url = adUnitWrapper.ad_unit.click_url_ios;
+            }
+            else
+            {
+                click_url = adUnitWrapper.ad_unit.click_url_default;
+            }
+
+            Application.OpenURL(click_url);
+            var json = impressionWrapper.SaveToString();
+            var impressionId = impressionWrapper.impression.id;
+
+            StartCoroutine(PostImpression("", string.Format("https://adspecter-sandbox.herokuapp.com/impressions/{0}/clicked", impressionId)));
+            //                        StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/clicked", impressionId)));
+        }
+
+        */
         public void DetectClickThrough()
         {
             if (Input.GetMouseButtonDown(0))
@@ -438,11 +470,23 @@ namespace AdSpecter
                 {
                     Debug.Log("hit.transform.name" + hit.transform.name);
 
-                    if (hit.transform.name == "ASRUAdUnit")
+                    if (hit.transform.parent == ASRUAdUnit.transform && hit.transform.name == "CallToActionBar") 
                     {
                         Debug.Log("Clicked");
 
-                        Application.OpenURL(adUnitWrapper.ad_unit.click_url);
+                        string click_url;
+
+                        if(Application.platform == RuntimePlatform.Android)
+                        {
+                            click_url = adUnitWrapper.ad_unit.click_url_android;
+                        } else if (Application.platform == RuntimePlatform.IPhonePlayer) {
+                            click_url = adUnitWrapper.ad_unit.click_url_ios;
+                        } else
+                        {
+                            click_url = adUnitWrapper.ad_unit.click_url_default;
+                        }
+                    
+                        Application.OpenURL(click_url);
                         var json = impressionWrapper.SaveToString();
                         var impressionId = impressionWrapper.impression.id;
 
@@ -451,6 +495,11 @@ namespace AdSpecter
                     }
                 }
             }
+        }
+
+        public string GetCallToAction()
+        {
+            return adUnitWrapper.ad_unit.call_to_action;
         }
     }
 
