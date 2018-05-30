@@ -470,7 +470,7 @@ namespace AdSpecter
                 {
                     Debug.Log("hit.transform.name" + hit.transform.name);
 
-                    if (hit.transform.parent == ASRUAdUnit.transform && hit.transform.name == "CallToActionBar") 
+                    if (hit.transform.parent == ASRUAdUnit.transform && hit.transform.name == "ASRUCTA") 
                     {
                         Debug.Log("Clicked");
 
@@ -479,9 +479,11 @@ namespace AdSpecter
                         if(Application.platform == RuntimePlatform.Android)
                         {
                             click_url = adUnitWrapper.ad_unit.click_url_android;
-                        } else if (Application.platform == RuntimePlatform.IPhonePlayer) {
+                        }
+                        else if (Application.platform == RuntimePlatform.IPhonePlayer) {
                             click_url = adUnitWrapper.ad_unit.click_url_ios;
-                        } else
+                        }
+                        else
                         {
                             click_url = adUnitWrapper.ad_unit.click_url_default;
                         }
