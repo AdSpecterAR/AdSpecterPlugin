@@ -273,8 +273,8 @@ namespace AdSpecter
                     {
                             //  StartCoroutine(GetMovieTexture("https://unity3d.com/files/docs/sample.ogg"));
                             //StartCoroutine(GetMovieTexture(adUnitWrapper.ad_unit.ad_unit_url));
-                       // GetVideo(adUnitWrapper.ad_unit.ad_unit_url);
-                        GetVideo("https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
+                        GetVideo(adUnitWrapper.ad_unit.ad_unit_url);
+                        //GetVideo("https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
                         break;
                     }
                 }
@@ -287,6 +287,7 @@ namespace AdSpecter
 
             video.url = url;
             video.isLooping = true;
+            video.playOnAwake = false;
 
            // Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
             Debug.Log("Received ad texture");
@@ -473,38 +474,42 @@ namespace AdSpecter
 
         public void DetectClickThrough()
         {
-            if (Input.GetMouseButtonDown(0))
+            for (int i = 0; i < Input.touchCount; ++ i)
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
-
-                if (Physics.Raycast(ray, out hit))
+                if (Input.GetTouch(i).phase == TouchPhase.Began)
                 {
-                    //Debug.Log("hit.transform.name" + hit.transform.name);
+                    Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(i).position);
+                    RaycastHit hit;
 
-                    if (hit.transform.parent == ASRUAdUnit.transform && hit.transform.name == "ASRUCTA") 
+                    if (Physics.Raycast(ray, out hit))
                     {
-                      //  Debug.Log("Clicked");
+                        //Debug.Log("hit.transform.name" + hit.transform.name);
 
-                        string click_url;
-
-                        if (Application.platform == RuntimePlatform.Android)
+                        if (hit.transform.parent == ASRUAdUnit.transform && hit.transform.name == "ASRUCTA")
                         {
-                            click_url = adUnitWrapper.ad_unit.click_url_android;
-                        }
-                        else if (Application.platform == RuntimePlatform.IPhonePlayer) {
-                            click_url = adUnitWrapper.ad_unit.click_url_ios;
-                        }
-                        else
-                        {
-                            click_url = adUnitWrapper.ad_unit.click_url_default;
-                        }
-                    
-                        Application.OpenURL(click_url);
-                        var json = impressionWrapper.SaveToString();
-                        var impressionId = impressionWrapper.impression.id;
+                            //  Debug.Log("Clicked");
 
-                        StartCoroutine(PostImpression("", string.Format("https://adspecter-sandbox.herokuapp.com/impressions/{0}/clicked", impressionId)));
+                            string click_url;
+
+                            if (Application.platform == RuntimePlatform.Android)
+                            {
+                                click_url = adUnitWrapper.ad_unit.click_url_android;
+                            }
+                            else if (Application.platform == RuntimePlatform.IPhonePlayer)
+                            {
+                                click_url = adUnitWrapper.ad_unit.click_url_ios;
+                            }
+                            else
+                            {
+                                click_url = adUnitWrapper.ad_unit.click_url_default;
+                            }
+
+                            Application.OpenURL(click_url);
+                            var json = impressionWrapper.SaveToString();
+                            var impressionId = impressionWrapper.impression.id;
+
+                            StartCoroutine(PostImpression("", string.Format("https://adspecter-sandbox.herokuapp.com/impressions/{0}/clicked", impressionId)));
+                        }
                     }
                 }
             }
