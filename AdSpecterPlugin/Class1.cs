@@ -217,6 +217,7 @@ namespace AdSpecter
         public bool startUpdate;
         // private Renderer[] renderers;
         private VideoPlayer video;
+        bool firstImpressionPosted = false;
 
         void Start()
         {
@@ -284,59 +285,27 @@ namespace AdSpecter
             video.url = url;
             video.isLooping = true;
             video.playOnAwake = false;
-
-            var impression = new Impression(
-                adUnitWrapper.ad_unit.id,
-                AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
-                AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
-            );
-
-            impressionWrapper = new ImpressionWrapper();
-            impressionWrapper.impression = impression;
-
-            var json = impressionWrapper.SaveToString();
-
-            StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
-
-            startUpdate = true;
         }
  
         //called by getAdUnit
         IEnumerator GetImageTexture(string url)
-         {
-             UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
+        {
+            UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
 
-             yield return www.SendWebRequest();
+            yield return www.SendWebRequest();
 
-             if (www.isNetworkError || www.isHttpError)
-             {
-                 Debug.Log("Error while getting ad texture:" + www.error);
-             }
-             else
-             {
-                 Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
+            if (www.isNetworkError || www.isHttpError)
+            {
+                Debug.Log("Error while getting ad texture:" + www.error);
+            }
+            else
+            {
+                Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
 
                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
-                //RenderOff();
-                
-                var impression = new Impression(adUnitWrapper.ad_unit.id,
-                     AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
-                     AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
-                 );
-                //Debug.Log("impression: " + impression);
-
-                 impressionWrapper = new ImpressionWrapper();
-                 impressionWrapper.impression = impression;
-
-                 var json = impressionWrapper.SaveToString();
-
-                 //Debug.Log("Impression created");
-
-                StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
-
-                startUpdate = true;
             }
-         }
+
+        }
 
         public void PlayVideo()
         {
@@ -358,6 +327,31 @@ namespace AdSpecter
                 video.Pause();
             }
         }
+
+        public void NewImpression()
+        {
+            if(firstImpressionPosted)
+            {
+                return;
+            }
+
+            Debug.Log("posting first impression!");
+            var impression = new Impression(
+                adUnitWrapper.ad_unit.id,
+                AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
+                AdSpecterConfigPlugIn.appSessionWrapper.app_session.id
+            );
+
+            impressionWrapper = new ImpressionWrapper();
+            impressionWrapper.impression = impression;
+
+            var json = impressionWrapper.SaveToString();
+
+            StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
+            startUpdate = true;
+            firstImpressionPosted = true;
+        }
+
 
         IEnumerator PostImpression(string json, string url)
         {
