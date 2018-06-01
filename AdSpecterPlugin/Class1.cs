@@ -351,6 +351,7 @@ namespace AdSpecter
 
             StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
             startUpdate = true;
+            firstImpressionPosted = true;
         }
 
 
