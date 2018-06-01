@@ -285,7 +285,6 @@ namespace AdSpecter
             video.url = url;
             video.isLooping = true;
             video.playOnAwake = false;
-            startUpdate = true; ;
         }
  
         //called by getAdUnit
@@ -304,7 +303,6 @@ namespace AdSpecter
                 Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
 
                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
-                startUpdate = true;
             }
 
         }
