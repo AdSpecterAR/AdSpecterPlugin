@@ -200,7 +200,7 @@ namespace AdSpecter
     public class AppSetupWrapper
     {
         public AppSetup developer_app;
-   
+
         public string SaveToString()
         {
             return JsonUtility.ToJson(this);
@@ -214,14 +214,14 @@ namespace AdSpecter
 
         private AdUnitWrapper adUnitWrapper;
         private ImpressionWrapper impressionWrapper;
-        public bool startUpdate;
+        public bool hasAdLoaded;
         // private Renderer[] renderers;
         private VideoPlayer video;
         bool firstImpressionPosted = false;
 
         void Start()
         {
-            startUpdate = false;
+            hasAdLoaded = false;
         }
 
         public IEnumerator GetAdUnit(GameObject adUnit, string format, int width, int height)
@@ -229,7 +229,7 @@ namespace AdSpecter
             //format must be "image" or "video"
 
             ASRUAdUnit = adUnit;
-           
+
             var aspect_ratio_height = height;
             var aspect_ratio_width = width;
 
@@ -287,7 +287,7 @@ namespace AdSpecter
             video.playOnAwake = false;
 
             // TODO: change this so that it is set true only when video has started playing
-            startUpdate = true;
+            hasAdLoaded = true;
         }
  
         //called by getAdUnit
@@ -306,8 +306,8 @@ namespace AdSpecter
                 Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
 
                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
-                
-                startUpdate = true;
+
+                hasAdLoaded = true;
             }
 
         }
@@ -333,14 +333,19 @@ namespace AdSpecter
             }
         }
 
+        public bool IsVideoPlaying()
+        {
+            return video.isPlaying;
+        }
+
         public void NewImpression()
         {
-            if(firstImpressionPosted)
+            if (firstImpressionPosted)
             {
                 return;
             }
 
-            Debug.Log("posting first impression!");
+            // Debug.Log("posting first impression!");
             var impression = new Impression(
                 adUnitWrapper.ad_unit.id,
                 AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
@@ -353,7 +358,6 @@ namespace AdSpecter
             var json = impressionWrapper.SaveToString();
 
             StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
-            startUpdate = true;
             firstImpressionPosted = true;
         }
 
@@ -390,7 +394,7 @@ namespace AdSpecter
             foreach (Touch touch in touches)
             {
                 var ray = Camera.main.ScreenPointToRay(new Vector3(touch.position.x, touch.position.y, 0));
-                if(Physics.Raycast (ray, out hit, Mathf.Infinity))
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity))
                 {
                     if (hit.transform.parent == ASRUAdUnit.transform && hit.transform.name == "ASRUCTA")
                     {
@@ -445,11 +449,11 @@ namespace AdSpecter
         {
             var appSetup = new AppSetup(developerKey);
             var postData = appSetup.SaveToString();
-         
+
             var url = "https://adspecter-sandbox.herokuapp.com/developer_app/authenticate";
 
-//            Debug.Log("Authentication post data: " + postData);
-            
+            //            Debug.Log("Authentication post data: " + postData);
+
             StartCoroutine(ASRUSetDeveloperKey(postData, url));
         }
 
@@ -468,16 +472,16 @@ namespace AdSpecter
             uwr.SetRequestHeader("Content-Type", "application/json");
 
             yield return uwr.SendWebRequest();
-            
+
             if (uwr.isNetworkError || uwr.isHttpError)
             {
-//                Debug.Log("Is network error? " + uwr.isNetworkError);
-//                Debug.Log("Is HTTP error? " + uwr.isHttpError);
+                //                Debug.Log("Is network error? " + uwr.isNetworkError);
+                //                Debug.Log("Is HTTP error? " + uwr.isHttpError);
                 Debug.Log("Error while setting developer key: " + uwr.error);
             }
             else
             {
-//                Debug.Log("Developer key set successfully");
+                //                Debug.Log("Developer key set successfully");
 
                 appSessionWrapper = AppSessionWrapper.CreateFromJSON(uwr.downloadHandler.text);
 
