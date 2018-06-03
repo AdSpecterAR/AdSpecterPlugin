@@ -358,7 +358,6 @@ namespace AdSpecter
             var json = impressionWrapper.SaveToString();
 
             StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
-            //hasAdLoaded = true;
             firstImpressionPosted = true;
         }
 
