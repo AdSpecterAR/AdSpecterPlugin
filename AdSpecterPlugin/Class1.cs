@@ -240,12 +240,12 @@ namespace AdSpecter
             }
 
             //var url ="https://adspecter-sandbox.herokuapp.com/ad_units/default";
-            var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
-
-            var url = baseUrl +
-                       "?ad_format=" + format +
-                       "&aspect_ratio_width=" + aspect_ratio_width +
-                       "&aspect_ratio_height=" + aspect_ratio_height;
+             var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
+            
+             var url = baseUrl + 
+                        "?ad_format=" + format + 
+                        "&aspect_ratio_width=" + aspect_ratio_width + 
+                        "&aspect_ratio_height=" + aspect_ratio_height;
 
             UnityWebRequest uwr = UnityWebRequest.Get(url);
             yield return uwr.SendWebRequest();
@@ -260,20 +260,20 @@ namespace AdSpecter
                 //Debug.Log(uwr.downloadHandler.text);
                 adUnitWrapper = AdUnitWrapper.CreateFromJSON(uwr.downloadHandler.text);
 
-                switch (format)
+                switch(format)
                 {
                     case "image":
-                        {
-                            StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
-                            break;
-                        }
+                    {
+                        StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
+                        break;
+                    }
 
                     case "video":
-                        {
-                            GetVideo(adUnitWrapper.ad_unit.ad_unit_url);
-                            //GetVideo("https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
-                            break;
-                        }
+                    {
+                        GetVideo(adUnitWrapper.ad_unit.ad_unit_url);
+                        //GetVideo("https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
+                        break;
+                    }
                 }
             }
         }
@@ -289,7 +289,7 @@ namespace AdSpecter
             // TODO: change this so that it is set true only when video has started playing
             hasAdLoaded = true;
         }
-
+ 
         //called by getAdUnit
         IEnumerator GetImageTexture(string url)
         {
@@ -400,20 +400,20 @@ namespace AdSpecter
                     {
                         string click_url;
 
-                        /* if (Application.platform == RuntimePlatform.Android)
-                         {
-                             click_url = adUnitWrapper.ad_unit.click_url_android;
-                         }
-                         else if (Application.platform == RuntimePlatform.IPhonePlayer)
-                         {
-                             click_url = adUnitWrapper.ad_unit.click_url_ios;
-                         }
-                         else
-                         {
-                             click_url = adUnitWrapper.ad_unit.click_url_default;
-                         }
-                         */
-
+                       /* if (Application.platform == RuntimePlatform.Android)
+                        {
+                            click_url = adUnitWrapper.ad_unit.click_url_android;
+                        }
+                        else if (Application.platform == RuntimePlatform.IPhonePlayer)
+                        {
+                            click_url = adUnitWrapper.ad_unit.click_url_ios;
+                        }
+                        else
+                        {
+                            click_url = adUnitWrapper.ad_unit.click_url_default;
+                        }
+                        */
+                        
                         click_url = adUnitWrapper.ad_unit.click_url_default;
 
                         Application.OpenURL(click_url);
