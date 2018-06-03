@@ -200,7 +200,7 @@ namespace AdSpecter
     public class AppSetupWrapper
     {
         public AppSetup developer_app;
-   
+
         public string SaveToString()
         {
             return JsonUtility.ToJson(this);
@@ -229,7 +229,7 @@ namespace AdSpecter
             //format must be "image" or "video"
 
             ASRUAdUnit = adUnit;
-           
+
             var aspect_ratio_height = height;
             var aspect_ratio_width = width;
 
@@ -240,12 +240,12 @@ namespace AdSpecter
             }
 
             //var url ="https://adspecter-sandbox.herokuapp.com/ad_units/default";
-             var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
-            
-             var url = baseUrl + 
-                        "?ad_format=" + format + 
-                        "&aspect_ratio_width=" + aspect_ratio_width + 
-                        "&aspect_ratio_height=" + aspect_ratio_height;
+            var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
+
+            var url = baseUrl +
+                       "?ad_format=" + format +
+                       "&aspect_ratio_width=" + aspect_ratio_width +
+                       "&aspect_ratio_height=" + aspect_ratio_height;
 
             UnityWebRequest uwr = UnityWebRequest.Get(url);
             yield return uwr.SendWebRequest();
@@ -260,20 +260,20 @@ namespace AdSpecter
                 //Debug.Log(uwr.downloadHandler.text);
                 adUnitWrapper = AdUnitWrapper.CreateFromJSON(uwr.downloadHandler.text);
 
-                switch(format)
+                switch (format)
                 {
                     case "image":
-                    {
-                        StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
-                        break;
-                    }
+                        {
+                            StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
+                            break;
+                        }
 
                     case "video":
-                    {
-                        GetVideo(adUnitWrapper.ad_unit.ad_unit_url);
-                        //GetVideo("https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
-                        break;
-                    }
+                        {
+                            GetVideo(adUnitWrapper.ad_unit.ad_unit_url);
+                            //GetVideo("https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
+                            break;
+                        }
                 }
             }
         }
@@ -285,9 +285,11 @@ namespace AdSpecter
             video.url = url;
             video.isLooping = true;
             video.playOnAwake = false;
+
+            // TODO: change this so that it is set true only when video has started playing
             adLoaded = true;
         }
- 
+
         //called by getAdUnit
         IEnumerator GetImageTexture(string url)
         {
@@ -304,9 +306,10 @@ namespace AdSpecter
                 Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
 
                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
+
+                adLoaded = true;
             }
 
-            adLoaded = true;
         }
 
         public void PlayVideo()
@@ -330,14 +333,19 @@ namespace AdSpecter
             }
         }
 
+        public bool VideoPlaying()
+        {
+            return video.isPlaying;
+        }
+
         public void NewImpression()
         {
-            if(firstImpressionPosted)
+            if (firstImpressionPosted)
             {
                 return;
             }
 
-            Debug.Log("posting first impression!");
+            // Debug.Log("posting first impression!");
             var impression = new Impression(
                 adUnitWrapper.ad_unit.id,
                 AdSpecterConfigPlugIn.appSessionWrapper.app_session.developer_app_id,
@@ -350,6 +358,7 @@ namespace AdSpecter
             var json = impressionWrapper.SaveToString();
 
             StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
+            //adLoaded = true;
             firstImpressionPosted = true;
         }
 
@@ -386,26 +395,26 @@ namespace AdSpecter
             foreach (Touch touch in touches)
             {
                 var ray = Camera.main.ScreenPointToRay(new Vector3(touch.position.x, touch.position.y, 0));
-                if(Physics.Raycast (ray, out hit, Mathf.Infinity))
+                if (Physics.Raycast(ray, out hit, Mathf.Infinity))
                 {
                     if (hit.transform.parent == ASRUAdUnit.transform && hit.transform.name == "ASRUCTA")
                     {
                         string click_url;
 
-                       /* if (Application.platform == RuntimePlatform.Android)
-                        {
-                            click_url = adUnitWrapper.ad_unit.click_url_android;
-                        }
-                        else if (Application.platform == RuntimePlatform.IPhonePlayer)
-                        {
-                            click_url = adUnitWrapper.ad_unit.click_url_ios;
-                        }
-                        else
-                        {
-                            click_url = adUnitWrapper.ad_unit.click_url_default;
-                        }
-                        */
-                        
+                        /* if (Application.platform == RuntimePlatform.Android)
+                         {
+                             click_url = adUnitWrapper.ad_unit.click_url_android;
+                         }
+                         else if (Application.platform == RuntimePlatform.IPhonePlayer)
+                         {
+                             click_url = adUnitWrapper.ad_unit.click_url_ios;
+                         }
+                         else
+                         {
+                             click_url = adUnitWrapper.ad_unit.click_url_default;
+                         }
+                         */
+
                         click_url = adUnitWrapper.ad_unit.click_url_default;
 
                         Application.OpenURL(click_url);
@@ -441,11 +450,11 @@ namespace AdSpecter
         {
             var appSetup = new AppSetup(developerKey);
             var postData = appSetup.SaveToString();
-         
+
             var url = "https://adspecter-sandbox.herokuapp.com/developer_app/authenticate";
 
-//            Debug.Log("Authentication post data: " + postData);
-            
+            //            Debug.Log("Authentication post data: " + postData);
+
             StartCoroutine(ASRUSetDeveloperKey(postData, url));
         }
 
@@ -464,16 +473,16 @@ namespace AdSpecter
             uwr.SetRequestHeader("Content-Type", "application/json");
 
             yield return uwr.SendWebRequest();
-            
+
             if (uwr.isNetworkError || uwr.isHttpError)
             {
-//                Debug.Log("Is network error? " + uwr.isNetworkError);
-//                Debug.Log("Is HTTP error? " + uwr.isHttpError);
+                //                Debug.Log("Is network error? " + uwr.isNetworkError);
+                //                Debug.Log("Is HTTP error? " + uwr.isHttpError);
                 Debug.Log("Error while setting developer key: " + uwr.error);
             }
             else
             {
-//                Debug.Log("Developer key set successfully");
+                //                Debug.Log("Developer key set successfully");
 
                 appSessionWrapper = AppSessionWrapper.CreateFromJSON(uwr.downloadHandler.text);
 
