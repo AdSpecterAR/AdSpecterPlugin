@@ -214,14 +214,14 @@ namespace AdSpecter
 
         private AdUnitWrapper adUnitWrapper;
         private ImpressionWrapper impressionWrapper;
-        public bool adLoaded;
+        public bool hasAdLoaded;
         // private Renderer[] renderers;
         private VideoPlayer video;
         bool firstImpressionPosted = false;
 
         void Start()
         {
-            adLoaded = false;
+            hasAdLoaded = false;
         }
 
         public IEnumerator GetAdUnit(GameObject adUnit, string format, int width, int height)
@@ -287,7 +287,7 @@ namespace AdSpecter
             video.playOnAwake = false;
 
             // TODO: change this so that it is set true only when video has started playing
-            adLoaded = true;
+            hasAdLoaded = true;
         }
 
         //called by getAdUnit
@@ -307,7 +307,7 @@ namespace AdSpecter
 
                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
 
-                adLoaded = true;
+                hasAdLoaded = true;
             }
 
         }
@@ -333,7 +333,7 @@ namespace AdSpecter
             }
         }
 
-        public bool VideoPlaying()
+        public bool IsVideoPlaying()
         {
             return video.isPlaying;
         }
@@ -358,7 +358,7 @@ namespace AdSpecter
             var json = impressionWrapper.SaveToString();
 
             StartCoroutine(PostImpression(json, "https://adspecter-sandbox.herokuapp.com/impressions"));
-            //adLoaded = true;
+            //hasAdLoaded = true;
             firstImpressionPosted = true;
         }
 
