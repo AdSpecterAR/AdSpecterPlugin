@@ -318,8 +318,7 @@ namespace AdSpecter
              audio.clip = movie.audioClip;
              Debug.Log(movie.audioClip);
              audio.Play();*/
-
-            if (!video.isPlaying && video.isPrepared)
+            if (!video.isPlaying)
             {
                 video.Play();
             }
