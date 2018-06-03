@@ -285,6 +285,9 @@ namespace AdSpecter
             video.url = url;
             video.isLooping = true;
             video.playOnAwake = false;
+
+            // TODO: change this so that it is set true only when video has started playing
+            startUpdate = true;
         }
  
         //called by getAdUnit
@@ -303,6 +306,8 @@ namespace AdSpecter
                 Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
 
                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
+                
+                startUpdate = true;
             }
 
         }
