@@ -178,22 +178,6 @@ namespace AdSpecter
         void Start()
         {
             hasAdLoaded = false;
-//            StartCoroutine(AdjustTest());
-        }
-
-        public IEnumerator AdjustTest()
-        {
-            var uwr = new UnityWebRequest("https://app.adjust.com/cbtest?session_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall", "POST");
-            yield return uwr.SendWebRequest();
-
-            if (uwr.isNetworkError || uwr.isHttpError)
-            {
-                Debug.Log("Error While Sending to adjust: " + uwr.error);
-            }
-            else
-            {
-                Debug.Log("Sent to adjust!!");
-            }
         }
 
         public IEnumerator GetAdUnit(GameObject adUnit, string format, int width, int height)
@@ -340,15 +324,13 @@ namespace AdSpecter
 
         public IEnumerator LogImpression()
         {
-//            StartCoroutine(PostImpression("", string.Format("https://adspecter-sandbox.herokuapp.com/impressions/{0}/clicked", impressionId)));
-
             Debug.Log("Impression logging");
             
 //            StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/shown", impressionId)));
 
             var impressionUrl = string.Format("https://app.adjust.com/cbtest" +
                                               "?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3{0}", impressionId);
-            var uwr = UnityWebRequest.Get(impressionUrl);
+            var uwr = new UnityWebRequest(impressionUrl, "POST");
             
             yield return uwr.SendWebRequest();
             
@@ -360,11 +342,19 @@ namespace AdSpecter
             {
                 Debug.Log("Impression successfully seen!");
             }
-//            StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/shown", impressionId)));
+        }
+
+        private string whichImpressionURL()
+        {
+            // TODO: IMPLEMENT
+            return "";
         }
 
         private string whichClickThroughURL()
         {
+            // TODO: IMPLEMENT
+            
+            
             // TODO: add a check for debug vs production build
             // NEVER use production URLs locally - will tamper with client impression results 
             
