@@ -178,8 +178,7 @@ namespace AdSpecter
         void Start()
         {
             hasAdLoaded = false;
-            StartCoroutine(AdjustTest());
-            Debug.Log("Country " + System.Globalization.RegionInfo.CurrentRegion);
+//            StartCoroutine(AdjustTest());
         }
 
         public IEnumerator AdjustTest()
@@ -210,8 +209,8 @@ namespace AdSpecter
                 aspect_ratio_width = 1;
             }
 
-//            var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
-            var baseUrl = "http://localhost:3000/ad_units/fetch";
+            var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
+//            var baseUrl = "http://localhost:3000/ad_units/fetch";
             var appSession = AdSpecterConfigPlugIn.appSessionWrapper.app_session;
 
             var url = baseUrl +
@@ -221,7 +220,6 @@ namespace AdSpecter
                       "&app_session_id=" + appSession.id +
                       "&developer_app_id=" + appSession.developer_app_id;
                
-
             UnityWebRequest uwr = UnityWebRequest.Get(url);
             
             yield return uwr.SendWebRequest();
@@ -340,7 +338,7 @@ namespace AdSpecter
             }
         }
 
-        public void LogImpression()
+        public IEnumerator LogImpression()
         {
 //            StartCoroutine(PostImpression("", string.Format("https://adspecter-sandbox.herokuapp.com/impressions/{0}/clicked", impressionId)));
 
@@ -348,8 +346,20 @@ namespace AdSpecter
             
 //            StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/shown", impressionId)));
 
-            var impressionUrl = string.Format("https://app.adjust.com/cbtest?click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3{0}", impressionId);
+            var impressionUrl = string.Format("https://app.adjust.com/cbtest" +
+                                              "?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3{0}", impressionId);
             var uwr = UnityWebRequest.Get(impressionUrl);
+            
+            yield return uwr.SendWebRequest();
+            
+            if (uwr.isNetworkError || uwr.isHttpError)
+            {
+                Debug.Log("Error While Sending Impression viewed to adjust: " + uwr.error);
+            }
+            else
+            {
+                Debug.Log("Impression successfully seen!");
+            }
 //            StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/shown", impressionId)));
         }
 
@@ -426,8 +436,8 @@ namespace AdSpecter
             var appSetup = new AppSetup(developerKey);
             var postData = appSetup.SaveToString();
 
-            var url = "http://localhost:3000/developer_app/authenticate";
-//            var url = "https://adspecter-sandbox.herokuapp.com/developer_app/authenticate";
+//            var url = "http://localhost:3000/developer_app/authenticate";
+            var url = "https://adspecter-sandbox.herokuapp.com/developer_app/authenticate";
 
             //   Debug.Log("Authentication post data: " + postData);
 
