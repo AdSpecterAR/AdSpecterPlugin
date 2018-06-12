@@ -70,6 +70,9 @@ namespace AdSpecter
         public bool rewarded;
         public bool interstitial;
         public string call_to_action;
+        public string impression_url_ios;
+        public string impression_url_android;
+        public string attribution_partner;
 
         public static AdUnit CreateFromJSON(string jsonString)
         {
@@ -166,12 +169,12 @@ namespace AdSpecter
     public class AdLoaderPlugIn : MonoBehaviour
     {
         public bool hasAdLoaded;
-        
+
         private GameObject ASRUAdUnit;
         private AdUnitWrapper adUnitWrapper;
         private int impressionId;
         private VideoPlayer video;
-        
+
         // TODO: assign a privacy level to below
         bool firstImpressionPosted = false;
 
@@ -194,7 +197,7 @@ namespace AdSpecter
             }
 
             var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
-//            var baseUrl = "http://localhost:3000/ad_units/fetch";
+            //            var baseUrl = "http://localhost:3000/ad_units/fetch";
             var appSession = AdSpecterConfigPlugIn.appSessionWrapper.app_session;
 
             var url = baseUrl +
@@ -203,9 +206,9 @@ namespace AdSpecter
                       "&aspect_ratio_height=" + aspect_ratio_height +
                       "&app_session_id=" + appSession.id +
                       "&developer_app_id=" + appSession.developer_app_id;
-               
+
             UnityWebRequest uwr = UnityWebRequest.Get(url);
-            
+
             yield return uwr.SendWebRequest();
 
             if (uwr.isNetworkError || uwr.isHttpError)
@@ -219,20 +222,20 @@ namespace AdSpecter
 
                 Debug.Log("IMPRESSION ID: " + impressionId);
 
-                switch(format)
+                switch (format)
                 {
                     case "image":
-                    {
-                        StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
-                        break;
-                    }
+                        {
+                            StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
+                            break;
+                        }
 
                     case "video":
-                    {
-                        GetVideo(adUnitWrapper.ad_unit.ad_unit_url);
-                        //GetVideo("https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
-                        break;
-                    }
+                        {
+                            GetVideo(adUnitWrapper.ad_unit.ad_unit_url);
+                            //GetVideo("https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
+                            break;
+                        }
                 }
             }
         }
@@ -248,7 +251,7 @@ namespace AdSpecter
             // TODO: change this so that it is set true only when video has started playing
             hasAdLoaded = true;
         }
- 
+
         IEnumerator GetImageTexture(string url)
         {
             UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
@@ -324,15 +327,16 @@ namespace AdSpecter
         public IEnumerator LogImpression()
         {
             Debug.Log("Impression logging");
-            
-//            StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/shown", impressionId)));
 
-            var impressionUrl = string.Format("https://app.adjust.com/cbtest" +
-                                              "?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3{0}", impressionId);
+            //            StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/shown", impressionId)));
+
+            // var impressionUrl = string.Format("https://app.adjust.com/cbtest" +
+            //                                 "?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3{0}", impressionId);
+            var impressionUrl = string.Format(whichImpressionURL(), impressionId);
             var uwr = new UnityWebRequest(impressionUrl, "POST");
-            
+
             yield return uwr.SendWebRequest();
-            
+
             if (uwr.isNetworkError || uwr.isHttpError)
             {
                 Debug.Log("Error While Sending Impression viewed to adjust: " + uwr.error);
@@ -346,36 +350,69 @@ namespace AdSpecter
         private string whichImpressionURL()
         {
             // TODO: IMPLEMENT
-            return "";
+            string impressionURL;
+
+            if (Debug.isDebugBuild)
+            {
+                impressionURL = string.Format("https://app.adjust.com/cbtest" +
+                                    "?session_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3&click_callback=%0A", impressionId);
+            }
+            else
+            {
+                if (Application.platform == RuntimePlatform.Android)
+                {
+                    impressionURL = string.Format(adUnitWrapper.ad_unit.impression_url_android +
+                        "?session_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3&click_callback=%0A", impressionId);
+                }
+                else if (Application.platform == RuntimePlatform.IPhonePlayer)
+                {
+                    impressionURL = string.Format(adUnitWrapper.ad_unit.impression_url_ios +
+                       "?session_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3&click_callback=%0A", impressionId);
+                }
+                else
+                {// this is the debug one, what is default?
+                    impressionURL = string.Format("https://app.adjust.com/cbtest" +
+                                    "?session_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3&click_callback=%0A", impressionId);
+                }
+            }
+            return impressionURL;
         }
 
         private string whichClickThroughURL()
         {
             // TODO: IMPLEMENT
-            
-            
+            string clickThroughURL;
+            //put in new generated URL?
             // TODO: add a check for debug vs production build
             // NEVER use production URLs locally - will tamper with client impression results 
-            
-            /* if (Application.platform == RuntimePlatform.Android)
+            if (Debug.isDebugBuild)
             {
-                return adUnitWrapper.ad_unit.click_url_android;
-            }
-            else if (Application.platform == RuntimePlatform.IPhonePlayer)
-            {
-                return adUnitWrapper.ad_unit.click_url_ios;
+                clickThroughURL = string.Format("https://app.adjust.com/cbtest" +
+                                        "?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
+                                        "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3", impressionId);
             }
             else
             {
-                return adUnitWrapper.ad_unit.click_url_default;
-            }
-            */
-                        
-//            return adUnitWrapper.ad_unit.click_url_default;
+                if (Application.platform == RuntimePlatform.Android)
+                {
+                    clickThroughURL = string.Format(adUnitWrapper.ad_unit.click_url_android +
+                                        "?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
+                                        "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3", impressionId);
+                }
+                else if (Application.platform == RuntimePlatform.IPhonePlayer)
+                {
+                    clickThroughURL = string.Format(adUnitWrapper.ad_unit.click_url_ios +
+                                           "?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
+                                        "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3", impressionId);
+                }
+                else
+                {
+                    clickThroughURL = string.Format(adUnitWrapper.ad_unit.click_url_default +
+                                            "?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
+                                        "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3", impressionId);
+                }
 
-            var clickThroughURL = string.Format("https://app.adjust.com/cbtest" +
-                                       "?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
-                                       "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}", impressionId);
+            }
 
             return clickThroughURL;
         }
@@ -384,18 +421,18 @@ namespace AdSpecter
         {
             RaycastHit hit;
             var touches = Input.touches;
-            
+
             foreach (Touch touch in touches)
             {
                 var ray = Camera.main.ScreenPointToRay(new Vector3(touch.position.x, touch.position.y, 0));
                 if (Physics.Raycast(ray, out hit, Mathf.Infinity))
                 {
                     if (hit.transform.parent == ASRUAdUnit.transform && hit.transform.name == "ASRUCTA")
-                    {   
+                    {
                         Application.OpenURL(whichClickThroughURL());
 
-//                        StartCoroutine(PostImpression("", string.Format("https://adspecter-sandbox.herokuapp.com/impressions/{0}/clicked", impressionId)));
-//                        StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/clicked", impressionId)));
+                        //                        StartCoroutine(PostImpression("", string.Format("https://adspecter-sandbox.herokuapp.com/impressions/{0}/clicked", impressionId)));
+                        //                        StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/clicked", impressionId)));
                     }
                 }
             }
@@ -417,15 +454,18 @@ namespace AdSpecter
     {
         public static string appSessionId;
         public static AppSessionWrapper appSessionWrapper;
+        // private IPGeoData IPData;
+        GeoData geoData;
 
         public bool loadAds = false;
+        public bool inUSA = false;
 
         public void AuthenticateUser(string developerKey)
         {
             var appSetup = new AppSetup(developerKey);
             var postData = appSetup.SaveToString();
 
-//            var url = "http://localhost:3000/developer_app/authenticate";
+            //            var url = "http://localhost:3000/developer_app/authenticate";
             var url = "https://adspecter-sandbox.herokuapp.com/developer_app/authenticate";
 
             //   Debug.Log("Authentication post data: " + postData);
@@ -464,5 +504,54 @@ namespace AdSpecter
                 loadAds = true;
             }
         }
+
+        public IEnumerator GetGeoData()
+        // public void GetData() 
+        {
+            geoData = null;
+            UnityWebRequest www = UnityWebRequest.Get("http://ip-api.com/json");
+            yield return www.SendWebRequest();
+
+            if (www.isNetworkError || www.isHttpError)
+            {
+                Debug.Log("error getting geodata" + www.error);
+            }
+            else
+            {
+                try
+                {
+                    geoData = JsonUtility.FromJson<GeoData>(www.downloadHandler.text);
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError("Could not get geo data: " + ex.ToString());
+                    //  return;
+                }
+
+
+                if (geoData.status != GeoData.SuccessResult)
+                {
+                    Debug.LogError("Unsuccessful geo data request: " + www.downloadHandler.text);
+                }
+
+                if (geoData.country == "United States")
+                {
+                    inUSA = true;
+                }
+
+            }
+        }
+    }
+
+    [Serializable]
+    public class GeoData
+    {
+        /// <summary>
+        /// The status that is returned if the response was successful.
+        /// </summary>
+        public const string SuccessResult = "success";
+        public string status;
+        public string country;
+        public string query;
     }
 }
