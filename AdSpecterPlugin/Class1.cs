@@ -175,8 +175,7 @@ namespace AdSpecter
         private int impressionId;
         private VideoPlayer video;
 
-        // TODO: assign a privacy level to below
-        bool firstImpressionPosted = false;
+        private bool firstImpressionPosted = false;
 
         void Start()
         {
@@ -248,7 +247,6 @@ namespace AdSpecter
             video.isLooping = true;
             video.playOnAwake = false;
 
-            // TODO: change this so that it is set true only when video has started playing
             hasAdLoaded = true;
         }
 
@@ -454,11 +452,12 @@ namespace AdSpecter
     {
         public static string appSessionId;
         public static AppSessionWrapper appSessionWrapper;
-        // private IPGeoData IPData;
-        GeoData geoData;
+        
+        private GeoData geoData;
 
         public bool loadAds = false;
         public bool inUSA = false;
+        public bool inCanada = false;
 
         public void AuthenticateUser(string developerKey)
         {
@@ -506,10 +505,8 @@ namespace AdSpecter
         }
 
         public IEnumerator GetGeoData()
-        // public void GetData() 
         {
-            geoData = null;
-            UnityWebRequest www = UnityWebRequest.Get("http://ip-api.com/json");
+            UnityWebRequest www = UnityWebRequest.Get("https://api.ipdata.co");
             yield return www.SendWebRequest();
 
             if (www.isNetworkError || www.isHttpError)
@@ -529,17 +526,27 @@ namespace AdSpecter
                 }
 
 
-                if (geoData.status != GeoData.SuccessResult)
+                if (geoData.country_code == null)
                 {
                     Debug.LogError("Unsuccessful geo data request: " + www.downloadHandler.text);
                 }
 
-                if (geoData.country == "United States")
+                if (geoData.country_code == "US")
                 {
                     inUSA = true;
                 }
 
+                if (geoData.country_code == "CA")
+                {
+                    inCanada = true;
+                }
+
             }
+        }
+
+        public bool IsValid()
+        {
+            return inUSA;
         }
     }
 
@@ -549,9 +556,9 @@ namespace AdSpecter
         /// <summary>
         /// The status that is returned if the response was successful.
         /// </summary>
-        public const string SuccessResult = "success";
-        public string status;
-        public string country;
-        public string query;
+        //public const string SuccessResult = "success";
+       // public string status;
+        public string country_code;
+        //public string query;
     }
 }
