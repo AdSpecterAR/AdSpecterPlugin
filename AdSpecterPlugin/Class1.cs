@@ -349,30 +349,30 @@ namespace AdSpecter
         {
             // TODO: IMPLEMENT
             string impressionURL;
+            string productionParameters = "?impression_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3";
+            string debugParameters = "?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3";
+
 
             if (Debug.isDebugBuild)
             {
                 impressionURL = string.Format("https://app.adjust.com/cbtest" +
-                                    "?session_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3&click_callback=%0A", impressionId);
+                                    debugParameters, impressionId);
             }
             else
             {
+                string baseURL = "https://app.adjust.com/cbtest";
+
                 if (Application.platform == RuntimePlatform.Android)
                 {
-                    impressionURL = string.Format(adUnitWrapper.ad_unit.impression_url_android +
-                        "?session_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3&click_callback=%0A", impressionId);
+                    baseURL = adUnitWrapper.ad_unit.impression_url_android;
                 }
                 else if (Application.platform == RuntimePlatform.IPhonePlayer)
                 {
-                    impressionURL = string.Format(adUnitWrapper.ad_unit.impression_url_ios +
-                       "?session_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3&click_callback=%0A", impressionId);
+                    baseURL = adUnitWrapper.ad_unit.impression_url_ios;
                 }
-                else
-                {// this is the debug one, what is default?
-                    impressionURL = string.Format("https://app.adjust.com/cbtest" +
-                                    "?session_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3&click_callback=%0A", impressionId);
-                }
+                impressionURL = string.Format(baseURL + productionParameters, impressionId);
             }
+
             return impressionURL;
         }
 
@@ -380,36 +380,30 @@ namespace AdSpecter
         {
             // TODO: IMPLEMENT
             string clickThroughURL;
+            string productionParameters = "?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
+                                        "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3";
+            string debugParameters = "?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
+                                        "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3";
+
             //put in new generated URL?
             // TODO: add a check for debug vs production build
             // NEVER use production URLs locally - will tamper with client impression results 
             if (Debug.isDebugBuild)
             {
-                clickThroughURL = string.Format("https://app.adjust.com/cbtest" +
-                                        "?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
-                                        "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3", impressionId);
+                clickThroughURL = string.Format("https://app.adjust.com/cbtest" + debugParameters, impressionId);
             }
             else
             {
+                string baseURL = adUnitWrapper.ad_unit.click_url_default;
                 if (Application.platform == RuntimePlatform.Android)
                 {
-                    clickThroughURL = string.Format(adUnitWrapper.ad_unit.click_url_android +
-                                        "?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
-                                        "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3", impressionId);
+                    baseURL = adUnitWrapper.ad_unit.click_url_android;
                 }
                 else if (Application.platform == RuntimePlatform.IPhonePlayer)
                 {
-                    clickThroughURL = string.Format(adUnitWrapper.ad_unit.click_url_ios +
-                                           "?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
-                                        "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3", impressionId);
+                    baseURL = adUnitWrapper.ad_unit.click_url_ios;
                 }
-                else
-                {
-                    clickThroughURL = string.Format(adUnitWrapper.ad_unit.click_url_default +
-                                            "?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
-                                        "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D3", impressionId);
-                }
-
+                clickThroughURL = string.Format(baseURL + productionParameters, impressionId);
             }
 
             return clickThroughURL;
@@ -458,6 +452,14 @@ namespace AdSpecter
         public bool loadAds = false;
         public bool inUSA = false;
         public bool inCanada = false;
+
+        public void GetAdvertisingID()
+        {
+            Application.RequestAdvertisingIdentifierAsync(
+           (string advertisingId, bool trackingEnabled, string error) =>
+           { Debug.Log("advertisingId " + advertisingId + " " + trackingEnabled + " " + error); }
+           );
+        }
 
         public void AuthenticateUser(string developerKey)
         {
