@@ -418,46 +418,48 @@ namespace AdSpecter
             switch (adUnitWrapper.ad_unit.attribution_partner)
             {
                 case "appsflyer":
+                {
+                    if (Debug.isDebugBuild)
                     {
-                        if (Debug.isDebugBuild)
-                        {
-                            clickThroughURL = string.Format("https://adspecter-sandbox.herokuapp.com/postback/adjust/click?impression_id={0}", impressionId);
-                        }
-                        else
-                        {
-                            if (Application.platform == RuntimePlatform.Android)
-                            {
-                                clickThroughURL = string.Format("https://impression.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
-                            }
-                            else if (Application.platform == RuntimePlatform.IPhonePlayer)
-                            {
-                                clickThroughURL = string.Format("https://impression.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
-                            }
-                        }
-                        break;
+                        clickThroughURL = string.Format("https://adspecter-sandbox.herokuapp.com/postback/adjust/click?impression_id={0}", impressionId);
                     }
+                    else
+                    {
+                        if (Application.platform == RuntimePlatform.Android)
+                        {
+                            clickThroughURL = string.Format("https://impression.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
+                        }
+                        else if (Application.platform == RuntimePlatform.IPhonePlayer)
+                        {
+                            clickThroughURL = string.Format("https://impression.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
+                        }
+                    }
+                    break;
+                }
                 case "adjust":
+                {
+                    if (Debug.isDebugBuild)
                     {
-                        if (Debug.isDebugBuild)
-                        {
-                            clickThroughURL = string.Format("https://app.adjust.com/cbtest" + debugParameters, impressionId);
-                        }
-                        else
-                        {
-                            string baseURL = adUnitWrapper.ad_unit.click_url_default;
-                            if (Application.platform == RuntimePlatform.Android)
-                            {
-                                baseURL = adUnitWrapper.ad_unit.click_url_android;
-                            }
-                            else if (Application.platform == RuntimePlatform.IPhonePlayer)
-                            {
-                                baseURL = adUnitWrapper.ad_unit.click_url_ios;
-                            }
-                            clickThroughURL = string.Format(baseURL + productionParameters, impressionId);
-                        }
-                        break;
+                        clickThroughURL = string.Format("https://app.adjust.com/cbtest" + debugParameters, impressionId);
                     }
+                    else
+                    {
+                        string baseURL = adUnitWrapper.ad_unit.click_url_default;
+
+                        if (Application.platform == RuntimePlatform.Android)
+                        {
+                            baseURL = adUnitWrapper.ad_unit.click_url_android;
+                        }
+                        else if (Application.platform == RuntimePlatform.IPhonePlayer)
+                        {
+                            baseURL = adUnitWrapper.ad_unit.click_url_ios;
+                        }
+                        clickThroughURL = string.Format(baseURL + productionParameters, impressionId);
+                    }
+                    break;
+                }
             }
+
             return clickThroughURL;
         }
 
