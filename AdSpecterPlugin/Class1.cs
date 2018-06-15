@@ -453,14 +453,6 @@ namespace AdSpecter
         public bool inUSA = false;
         public bool inCanada = false;
 
-        public void GetAdvertisingID()
-        {
-            Application.RequestAdvertisingIdentifierAsync(
-           (string advertisingId, bool trackingEnabled, string error) =>
-           { Debug.Log("advertisingId " + advertisingId + " " + trackingEnabled + " " + error); }
-           );
-        }
-
         public void AuthenticateUser(string developerKey)
         {
             var appSetup = new AppSetup(developerKey);
