@@ -348,7 +348,7 @@ namespace AdSpecter
         private string whichImpressionURL()
         {
             // TODO: IMPLEMENT
-            string impressionURL = "https://adspecter-sandbox.herokuapp.com/postback/appsflyer/impression?impression_id={CLICK_ID}";
+            string impressionURL = "https://adspecter-sandbox.herokuapp.com/postback/appsflyer/impression?impression_id=impressionId";
             string productionParameters = "?impression_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3";
             string debugParameters = "?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3";
 
@@ -358,7 +358,7 @@ namespace AdSpecter
                 {
                     if (Debug.isDebugBuild)
                     {
-                        impressionURL = "https://adspecter-sandbox.herokuapp.com/postback/appsflyer/impression?impression_id={CLICK_ID}";
+                        impressionURL = "https://adspecter-sandbox.herokuapp.com/postback/appsflyer/impression?impression_id=impressionId";
                     }
                     else
                     {
