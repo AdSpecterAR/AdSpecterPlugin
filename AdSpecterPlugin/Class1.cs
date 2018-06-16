@@ -377,15 +377,14 @@ namespace AdSpecter
                 }
                 case "adjust":
                 {
+                    var baseURL = "https://app.adjust.com/cbtest";
+                    
                     if (Debug.isDebugBuild)
                     {
-                        impressionURL = string.Format("https://app.adjust.com/cbtest" +
-                                            debugParameters, impressionId);
+                        impressionURL = baseURL + debugParameters;
                     }
                     else
                     {
-                        string baseURL = "https://app.adjust.com/cbtest";
-
                         if (Application.platform == RuntimePlatform.Android)
                         {
                             baseURL = adUnitWrapper.ad_unit.impression_url_android;
@@ -410,9 +409,9 @@ namespace AdSpecter
         {
             // TODO: IMPLEMENT
             string clickThroughURL = "";
-            string productionParameters = string.Format("?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
+            string productionParameters = string.Format("?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
                                         "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}", impressionId);
-            string debugParameters = string.Format("?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D3" +
+            string debugParameters = string.Format("?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
                                         "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}", impressionId);
 
             //put in new generated URL?
@@ -428,11 +427,11 @@ namespace AdSpecter
                     {
                         if (Application.platform == RuntimePlatform.Android)
                         {
-                            clickThroughURL = string.Format("https://impression.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
+                            clickThroughURL = string.Format("https://app.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
                         }
                         else if (Application.platform == RuntimePlatform.IPhonePlayer)
                         {
-                            clickThroughURL = string.Format("https://impression.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
+                            clickThroughURL = string.Format("https://app.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
                         }
                     }
                     
