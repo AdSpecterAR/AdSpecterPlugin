@@ -349,7 +349,7 @@ namespace AdSpecter
         {
             // TODO: IMPLEMENT
             var impressionURL = "";
-            var siteID = Application.productName + Application.platform + "AdSpecter";
+            var siteID = getSiteID();
             var productionParameters = string.Format("?impression_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D{0}", impressionId);
             var debugParameters = string.Format("?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D{0}", impressionId);
 
@@ -359,7 +359,7 @@ namespace AdSpecter
                 {
                     if (Debug.isDebugBuild)
                     {
-                        impressionURL = "https://adspecter-sandbox.herokuapp.com/postback/appsflyer/impression?impression_id={0}";
+                        impressionURL = string.Format("https://adspecter-sandbox.herokuapp.com/postback/appsflyer/impression?impression_id={0}", impressionId);
                     }
                     else
                     {
@@ -406,14 +406,19 @@ namespace AdSpecter
             return impressionURL;
         }
 
+        private string getSiteID()
+        {
+            return Application.productName + "_" + Application.platform + "_AdSpecter";
+        }
+
         private string whichClickThroughURL()
         {
             // TODO: IMPLEMENT
-            string clickThroughURL = "";
-            var siteID = Application.productName + Application.platform + "AdSpecter";
-            string productionParameters = string.Format("?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
+            var clickThroughURL = "";
+            var siteID = getSiteID();
+            var productionParameters = string.Format("?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
                                         "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}", impressionId);
-            string debugParameters = string.Format("?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
+            var debugParameters = string.Format("?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
                                         "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}", impressionId);
 
             //put in new generated URL?
@@ -599,7 +604,7 @@ namespace AdSpecter
 
         public bool IsValid()
         {
-            return inCanada;
+            return inUSA;
         }
     }
 
