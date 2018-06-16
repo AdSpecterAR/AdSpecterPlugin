@@ -331,7 +331,7 @@ namespace AdSpecter
             // var impressionUrl = string.Format("https://app.adjust.com/cbtest" +
             //                                 "?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D3{0}", impressionId);
             var impressionUrl = string.Format(whichImpressionURL(), impressionId);
-            var uwr = new UnityWebRequest(impressionUrl, "POST");
+            var uwr = new UnityWebRequest(impressionUrl, "GET");
 
             yield return uwr.SendWebRequest();
 
@@ -349,6 +349,7 @@ namespace AdSpecter
         {
             // TODO: IMPLEMENT
             var impressionURL = "";
+            var siteID = getSiteID();
             var productionParameters = string.Format("?impression_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D{0}", impressionId);
             var debugParameters = string.Format("?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D{0}", impressionId);
 
@@ -364,12 +365,12 @@ namespace AdSpecter
                     {
                         if (Application.platform == RuntimePlatform.Android)
                         {
-                            impressionURL = string.Format("https://impression.appsflyer.com/app_id?c=test&pid=adspecter_int&click_id={0}", impressionId);
+                            impressionURL = string.Format("https://impression.appsflyer.com/app_id?c=test&pid=adspecter_int&click_id={0}&af_siteid={1}", impressionId, siteID);
                                 //&advertising_id={GAID}
                             }
                             else if (Application.platform == RuntimePlatform.IPhonePlayer)
                         {
-                            impressionURL = string.Format("https://impression.appsflyer.com/app_id?c=test&pid=adspecter_int&click_id={0}", impressionId);
+                            impressionURL = string.Format("https://impression.appsflyer.com/app_id?c=test&pid=adspecter_int&click_id={0}&af_siteid={1}", impressionId, siteID);
                               //  &idfa ={ IDFA}
                             }
                     }
@@ -405,13 +406,19 @@ namespace AdSpecter
             return impressionURL;
         }
 
+        private string getSiteID()
+        {
+            return Application.productName + "_" + Application.platform + "_AdSpecter";
+        }
+
         private string whichClickThroughURL()
         {
             // TODO: IMPLEMENT
-            string clickThroughURL = "";
-            string productionParameters = string.Format("?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
+            var clickThroughURL = "";
+            var siteID = getSiteID();
+            var productionParameters = string.Format("?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
                                         "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}", impressionId);
-            string debugParameters = string.Format("?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
+            var debugParameters = string.Format("?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
                                         "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}", impressionId);
 
             //put in new generated URL?
@@ -427,11 +434,11 @@ namespace AdSpecter
                     {
                         if (Application.platform == RuntimePlatform.Android)
                         {
-                            clickThroughURL = string.Format("https://app.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
+                            clickThroughURL = string.Format("https://app.appsflyer.com/app_id?pid=adspecter_int&click_id={0}&af_siteid={1}", impressionId, siteID);
                         }
                         else if (Application.platform == RuntimePlatform.IPhonePlayer)
                         {
-                            clickThroughURL = string.Format("https://app.appsflyer.com/app_id?pid=adspecter_int&click_id={0}", impressionId);
+                            clickThroughURL = string.Format("https://app.appsflyer.com/app_id?pid=adspecter_int&click_id={0}&af_siteid{1}", impressionId, siteID);
                         }
                     }
                     
