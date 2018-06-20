@@ -196,7 +196,7 @@ namespace AdSpecter
             }
 
             var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch";
-            //            var baseUrl = "http://localhost:3000/ad_units/fetch";
+           
             var appSession = AdSpecterConfigPlugIn.appSessionWrapper.app_session;
 
             var url = baseUrl +
@@ -206,6 +206,7 @@ namespace AdSpecter
                       "&app_session_id=" + appSession.id +
                       "&developer_app_id=" + appSession.developer_app_id;
 
+          //  url = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch_portal?ad_format=image_360";
             UnityWebRequest uwr = UnityWebRequest.Get(url);
 
             yield return uwr.SendWebRequest();
@@ -239,6 +240,53 @@ namespace AdSpecter
             }
         }
 
+        public IEnumerator Get360AdUnit(GameObject adUnit, string format)
+        {
+            ASRUAdUnit = adUnit;
+            
+            var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch_portal";
+
+            // var appSession = AdSpecterConfigPlugIn.appSessionWrapper.app_session;
+            //Debug.Log("Appsession: " + appSession);
+            var url = baseUrl +
+                    "?ad_format=" + format;
+            //            "&app_session_id=" + appSession.id +
+            //          "&developer_app_id=" + appSession.developer_app_id;
+           
+            UnityWebRequest uwr = UnityWebRequest.Get(url);
+           
+            yield return uwr.SendWebRequest();
+           
+            if (uwr.isNetworkError || uwr.isHttpError)
+            {
+                Debug.Log("Error while retrieving ad: " + uwr.error);
+            }
+            else
+            {
+                adUnitWrapper = AdUnitWrapper.CreateFromJSON(uwr.downloadHandler.text);
+               
+                impressionId = adUnitWrapper.impression_id;
+                
+                Debug.Log("IMPRESSION ID: " + impressionId);
+
+                switch (format)
+                {
+                    case "image_360":
+                        {
+                            StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
+                            break;
+                        }
+
+                    case "video_360":
+                        {
+                            GetVideo(adUnitWrapper.ad_unit.ad_unit_url);
+                            //GetVideo("https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4");
+                            break;
+                        }
+                }
+            }
+        }
+
         void GetVideo(string url)
         {
             video = ASRUAdUnit.AddComponent<UnityEngine.Video.VideoPlayer>();
@@ -253,9 +301,9 @@ namespace AdSpecter
         IEnumerator GetImageTexture(string url)
         {
             UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
-
+           
             yield return www.SendWebRequest();
-
+           
             if (www.isNetworkError || www.isHttpError)
             {
                 Debug.Log("Error while getting ad texture:" + www.error);
@@ -263,7 +311,7 @@ namespace AdSpecter
             else
             {
                 Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
-
+             
                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
 
                 hasAdLoaded = true;
@@ -324,8 +372,6 @@ namespace AdSpecter
 
         public IEnumerator LogImpression()
         {
-            Debug.Log("Impression logging");
-
             //            StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/shown", impressionId)));
 
             // var impressionUrl = string.Format("https://app.adjust.com/cbtest" +
@@ -564,7 +610,7 @@ namespace AdSpecter
 
         public IEnumerator GetGeoData()
         {
-            UnityWebRequest www = UnityWebRequest.Get("https://api.ipdata.co");
+            UnityWebRequest www = UnityWebRequest.Get("https://api.ipdata.co/?api-key=1ad68e416ab80c9eaa32d01f42de56210053fff2bb3c0d838af50e34");
             yield return www.SendWebRequest();
 
             if (www.isNetworkError || www.isHttpError)
