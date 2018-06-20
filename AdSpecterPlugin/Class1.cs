@@ -242,9 +242,8 @@ namespace AdSpecter
 
         public IEnumerator Get360AdUnit(GameObject adUnit, string format)
         {
-            Debug.Log("started 360 mehotd, assigning " + adUnit);
             ASRUAdUnit = adUnit;
-            Debug.Log("adunit: " + ASRUAdUnit + "old one " + adUnit);
+            
             var baseUrl = "https://adspecter-sandbox.herokuapp.com/ad_units/fetch_portal";
 
             // var appSession = AdSpecterConfigPlugIn.appSessionWrapper.app_session;
@@ -254,12 +253,10 @@ namespace AdSpecter
             //            "&app_session_id=" + appSession.id +
             //          "&developer_app_id=" + appSession.developer_app_id;
            
-            Debug.Log("url" + url);
-
             UnityWebRequest uwr = UnityWebRequest.Get(url);
-            Debug.Log("made uwr");
+           
             yield return uwr.SendWebRequest();
-            Debug.Log("sent web request");
+           
             if (uwr.isNetworkError || uwr.isHttpError)
             {
                 Debug.Log("Error while retrieving ad: " + uwr.error);
@@ -267,7 +264,7 @@ namespace AdSpecter
             else
             {
                 adUnitWrapper = AdUnitWrapper.CreateFromJSON(uwr.downloadHandler.text);
-                Debug.Log("wrpaper: " + adUnitWrapper);
+               
                 impressionId = adUnitWrapper.impression_id;
                 
                 Debug.Log("IMPRESSION ID: " + impressionId);
@@ -276,7 +273,6 @@ namespace AdSpecter
                 {
                     case "image_360":
                         {
-                            Debug.Log("getting: " + adUnitWrapper.ad_unit.ad_unit_url);
                             StartCoroutine(GetImageTexture(adUnitWrapper.ad_unit.ad_unit_url));
                             break;
                         }
@@ -305,9 +301,9 @@ namespace AdSpecter
         IEnumerator GetImageTexture(string url)
         {
             UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
-            Debug.Log("url: " + url);
+           
             yield return www.SendWebRequest();
-            Debug.Log("sent web request");
+           
             if (www.isNetworkError || www.isHttpError)
             {
                 Debug.Log("Error while getting ad texture:" + www.error);
@@ -315,7 +311,7 @@ namespace AdSpecter
             else
             {
                 Texture myTexture = ((DownloadHandlerTexture)www.downloadHandler).texture;
-                Debug.Log("texture: " + myTexture);
+             
                 ASRUAdUnit.GetComponent<Renderer>().material.mainTexture = myTexture;
 
                 hasAdLoaded = true;
@@ -376,8 +372,6 @@ namespace AdSpecter
 
         public IEnumerator LogImpression()
         {
-            Debug.Log("Impression logging");
-
             //            StartCoroutine(PostImpression("", string.Format("http://localhost:3000/impressions/{0}/shown", impressionId)));
 
             // var impressionUrl = string.Format("https://app.adjust.com/cbtest" +
