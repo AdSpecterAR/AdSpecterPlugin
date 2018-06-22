@@ -396,9 +396,8 @@ namespace AdSpecter
             // TODO: IMPLEMENT
             var impressionURL = "";
             var siteID = Application.productName + Application.platform + "AdSpecter";
-            var productionParameters = string.Format("?impression_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D{0}", impressionId);
-            var debugParameters = string.Format("?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D{0}", impressionId);
-
+            var productionParameters = string.Format("?impression_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D{0}" + "%26adgroup%3D%7B{1}%7D", impressionId, siteID);
+            var debugParameters = string.Format("?impression_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fimpression%3Fimpression_id%3D{0}" + "%26adgroup%3D%7B{1}%7D", impressionId, siteID);
             switch (adUnitWrapper.ad_unit.attribution_partner)
             {
                 case "appsflyer":
@@ -458,10 +457,10 @@ namespace AdSpecter
             string clickThroughURL = "";
             var siteID = Application.productName + Application.platform + "AdSpecter";
             string productionParameters = string.Format("?install_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
-                                        "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}", impressionId);
+                                        "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}" + "%26adgroup%3D%7B{1}%7D", impressionId, siteID);
             string debugParameters = string.Format("?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
-                                        "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}", impressionId);
-
+                                        "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}" + "%26adgroup%3D%7B{1}%7D", impressionId, siteID);
+"
             //put in new generated URL?
             switch (adUnitWrapper.ad_unit.attribution_partner)
             {
@@ -473,9 +472,12 @@ namespace AdSpecter
                     }
                     else
                     {
+                        string baseURL = "https://app.appsflyer.com/id896112560";
+
                         if (Application.platform == RuntimePlatform.Android)
                         {
-                            clickThroughURL = string.Format("https://app.appsflyer.com/app_id?pid=adspecter_int&click_id={0}&af_siteid={1}", impressionId, siteID);
+                            
+                            clickThroughURL = baseURL + "?af_adset={AD_SET}&af_ad={AD_NAME}&pid=adspecter_int&af_click_lookback=7d&idfa={IDFA}&advertising_id={GAID}&clickid={IMPRESSION_ID}";
                         }
                         else if (Application.platform == RuntimePlatform.IPhonePlayer)
                         {
