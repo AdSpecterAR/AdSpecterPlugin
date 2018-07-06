@@ -650,7 +650,14 @@ namespace AdSpecter
 
         public bool IsValid()
         {
-            return inUSA;
+            if (Debug.isDebugBuild)
+            {
+                return true;
+            }
+            else
+            {
+                return inUSA;
+            }
         }
     }
 
