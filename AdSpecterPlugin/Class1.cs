@@ -460,7 +460,7 @@ namespace AdSpecter
                                         "&click_callback=https%3A%2F%2Fsanchez-production.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}" + "%26adgroup%3D%7B{1}%7D", impressionId, siteID);
             string debugParameters = string.Format("?install_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Finstall%3Fimpression_id%3D{0}" +
                                         "&click_callback=https%3A%2F%2Fadspecter-sandbox.herokuapp.com%2Fpostback%2Fadjust%2Fclick%3Fimpression_id%3D{0}" + "%26adgroup%3D%7B{1}%7D", impressionId, siteID);
-"
+
             //put in new generated URL?
             switch (adUnitWrapper.ad_unit.attribution_partner)
             {
@@ -578,6 +578,7 @@ namespace AdSpecter
         {
             var uwr = new UnityWebRequest(url, "PUT");
 
+        //    Debug.Log("uwr: " + uwr);
             if (json != "")
             {
                 byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
@@ -587,7 +588,11 @@ namespace AdSpecter
             uwr.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
             uwr.SetRequestHeader("Content-Type", "application/json");
 
+      //      Debug.Log("downloaded handler");
+
             yield return uwr.SendWebRequest();
+
+    //        Debug.Log("sent web request");
 
             if (uwr.isNetworkError || uwr.isHttpError)
             {
@@ -598,9 +603,10 @@ namespace AdSpecter
             else
             {
                 //                Debug.Log("Developer key set successfully");
-
+  //              Debug.Log("no error");
                 appSessionWrapper = AppSessionWrapper.CreateFromJSON(uwr.downloadHandler.text);
 
+//                Debug.Log("appsessionWrapper: " + appSessionWrapper);
                 loadAds = true;
             }
         }
@@ -647,7 +653,14 @@ namespace AdSpecter
 
         public bool IsValid()
         {
-            return inCanada;
+            if (Debug.isDebugBuild)
+            {
+                return true;
+            }
+            else
+            {
+                return inUSA;
+            }
         }
     }
 
@@ -660,6 +673,6 @@ namespace AdSpecter
         //public const string SuccessResult = "success";
        // public string status;
         public string country_code;
-        //public string query;
+        //public string query;'
     }
 }
